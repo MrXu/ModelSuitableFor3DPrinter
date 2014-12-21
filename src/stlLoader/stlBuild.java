@@ -86,6 +86,7 @@ public class stlBuild {
         //create a shrunk vertex for every outer vertex
         for (loopi=0;loopi<outerVertexList.size();loopi++){
             //using neighbours vertex
+            VertexGeometric newVertex = new VertexGeometric(0,0,0,loopi);
             for(VertexGeometric vertex: outerVertexList.get(loopi).neighbourVertices){
 
             }
