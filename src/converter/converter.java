@@ -31,15 +31,13 @@ public class converter {
             Build builder = new Build();
             Parse obj = new Parse(builder, filename);
 
-            //create neighbours for every vertex
-            builder.createNeighbours();
             //initialize stl builder
             stlBuild stlbuilder = new stlBuild();
             //copy vertexGeometrics list
             stlbuilder.copyOuterVertexList(builder.verticesG);
 
             // print object name
-            System.out.println(builder.objectName);
+//            System.out.println(builder.objectName);
 
 
             //calculate the vector to shift
@@ -94,6 +92,11 @@ public class converter {
                 stlbuilder.addStlFace(tempFace);
 
             }
+            /**
+               create neighbouring facets for every vertex
+             */
+            stlbuilder.createNeighbourFaces();
+
             System.out.println("-----stl file has "+stlbuilder.stlFaces.size()+" faces------");
 
 
@@ -102,7 +105,11 @@ public class converter {
 
 //            System.out.println(stlbuilder.outerVertexList);
 //            System.out.println(builder.verticesG);
-            System.out.println(stlbuilder.outerVertexList.get(0).neighbourVertices);
+//            System.out.println(stlbuilder.outerVertexList.get(0).neighbourVertices);
+//            for (stlFace face:stlbuilder.outerVertexList.get(1).neighbourFaces){
+//                System.out.println(face);
+//            }
+
 
 
 

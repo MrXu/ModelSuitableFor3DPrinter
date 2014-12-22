@@ -6,10 +6,9 @@ package ObjLoader.builder;
 // to use this code under any version of the GPL, LPGL, Apache, or BSD
 // licenses, or contact me for use of another license.
 
+import stlLoader.stlFace;
+
 import java.util.*;
-import java.text.*;
-import java.io.*;
-import java.io.IOException;
 
 public class VertexGeometric {
 
@@ -18,6 +17,8 @@ public class VertexGeometric {
     public float z = 0;
     //the array index in the vertex list
     public int index = 0;
+    //linkedhashset of neighbouring facets
+    public LinkedHashSet<stlFace> neighbourFaces = new LinkedHashSet<stlFace>();
     //the linkedhashset of neighbours
     public LinkedHashSet<VertexGeometric> neighbourVertices = new LinkedHashSet<VertexGeometric>();
 
@@ -28,8 +29,12 @@ public class VertexGeometric {
         this.index = ArrayIndex;
     }
 
-    public void addNeighbour(VertexGeometric vertex){
+    public void addNeighbourVertex(VertexGeometric vertex){
         neighbourVertices.add(vertex);
+    }
+
+    public void addNeighbourFace(stlFace face){
+        neighbourFaces.add(face);
     }
 
     public String toString() {
@@ -38,5 +43,14 @@ public class VertexGeometric {
         } else {
             return x + " " + y + " " + z; //fixed stl format
         }
+    }
+
+    public void addinNeighbourVertices(){
+        for(stlFace face:neighbourFaces){
+            for(VertexGeometric vertex:face.VertexList){
+                addNeighbourVertex(vertex);
+            }
+        }
+        neighbourVertices.remove(this);
     }
 }

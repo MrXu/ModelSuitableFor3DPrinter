@@ -81,15 +81,32 @@ public class stlBuild {
     }
 
 
-    public void createInnerVertex(){
+    public void createInnerVertexBasedOnNeighbourFace(){
         int loopi = 0;
         //create a shrunk vertex for every outer vertex
         for (loopi=0;loopi<outerVertexList.size();loopi++){
             //using neighbours vertex
             VertexGeometric newVertex = new VertexGeometric(0,0,0,loopi);
             for(VertexGeometric vertex: outerVertexList.get(loopi).neighbourVertices){
+                /**
+                 * algorithm based on neighbouring vertices seems to be wrong, need to refer to notes
+                 * Consider using neighbouring facets?
+                 */
 
             }
+        }
+    }
+
+    public void createNeighbourFaces(){
+        int loopi = 0;
+        int loopj = 0;
+        for (loopi=0;loopi<stlFaces.size();loopi++){
+            for(loopj=0;loopj<stlFaces.get(loopi).VertexList.size();loopj++){
+                stlFaces.get(loopi).VertexList.get(loopj).addNeighbourFace(stlFaces.get(loopi));
+            }
+        }
+        for(VertexGeometric vertex:outerVertexList){
+            vertex.addinNeighbourVertices();
         }
     }
 

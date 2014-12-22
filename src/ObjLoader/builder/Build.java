@@ -485,19 +485,7 @@ public class Build implements BuilderInterface {
         System.err.println("Build.doneParsing: Loaded filename '" + filename + "' with " + verticesG.size() + " verticesG, " + verticesT.size() + " verticesT, " + verticesN.size() + " verticesN and " + faces.size() + " faces, of which " + faceTriCount + " triangles, " + faceQuadCount + " quads, and " + facePolyCount + " with more than 4 points, and faces with errors " + faceErrorCount);
     }
 
-    public void createNeighbours(){
-        int loopi = 0;
-        Face tempFace = new Face();
-        for (loopi=0;loopi<faces.size();loopi++){
-            tempFace = faces.get(loopi);
-            //add neighbours for every vertex
-            tempFace.vertices.get(0).v.neighbourVertices.add(tempFace.vertices.get(1).v);
-            tempFace.vertices.get(0).v.neighbourVertices.add(tempFace.vertices.get(2).v);
-            tempFace.vertices.get(1).v.neighbourVertices.add(tempFace.vertices.get(0).v);
-            tempFace.vertices.get(1).v.neighbourVertices.add(tempFace.vertices.get(2).v);
-            tempFace.vertices.get(2).v.neighbourVertices.add(tempFace.vertices.get(0).v);
-            tempFace.vertices.get(2).v.neighbourVertices.add(tempFace.vertices.get(1).v);
-        }
-    }
+
+
 
 }
