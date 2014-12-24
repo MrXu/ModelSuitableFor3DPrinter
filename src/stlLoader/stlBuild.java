@@ -41,7 +41,7 @@ public class stlBuild {
         int loopi = 0;
         int loopj = 0;
 
-        if (outerStlFaces ==null){
+        if (outerStlFaces.isEmpty()){
             System.err.println("ArrayList of outerStlFace is null.");
         }
         else {
@@ -68,24 +68,24 @@ public class stlBuild {
                     writer.write(" endfacet\n");
                 }
 
-                if (innerStlFaces==null){
+                if (innerStlFaces.isEmpty()){
                     System.err.println("ArrayList of innerStlFace is null.");
                     constructInnerStructure();
                 }
-                else{
-                    for(loopi=0;loopi< innerStlFaces.size();loopi++){
-                        //write face normal
-                        writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
-                        //write vertices
-                        writer.write("  outer loop\n");
-                        for(loopj=0;loopj<3;loopj++){
-                            writer.write("   vertex " + innerStlFaces.get(loopi).VertexList.get(loopj).toString() + "\n");
-                        }
-                        writer.write("  endloop\n");
-                        //write endfacet
-                        writer.write(" endfacet\n");
+
+                for(loopi=0;loopi< innerStlFaces.size();loopi++){
+                    //write face normal
+                    writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
+                    //write vertices
+                    writer.write("  outer loop\n");
+                    for(loopj=0;loopj<3;loopj++){
+                        writer.write("   vertex " + innerStlFaces.get(loopi).VertexList.get(loopj).toString() + "\n");
                     }
+                    writer.write("  endloop\n");
+                    //write endfacet
+                    writer.write(" endfacet\n");
                 }
+
 
 
 
@@ -109,6 +109,71 @@ public class stlBuild {
         }
     }
 
+
+    /**
+     * write stl file
+     * */
+    public void writeInnerStl(String filename){
+
+        int loopi = 0;
+        int loopj = 0;
+
+
+
+        Writer writer = null;
+
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(
+                    new FileOutputStream(filename), "utf-8"));
+
+            //write stl head
+            writer.write("solid shape\n");
+
+            if (innerStlFaces.isEmpty()){
+                System.err.println("ArrayList of innerStlFace is null.");
+                constructInnerStructureForTest();
+            }
+
+            System.err.println("Number of outer vertices (writer): "+outerVertexList.size());
+            System.err.println(innerStlFaces);
+            for(loopi=0;loopi< innerStlFaces.size();loopi++){
+                //write face normal
+                writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
+                //write vertices
+                writer.write("  outer loop\n");
+                for(loopj=0;loopj<3;loopj++){
+                    writer.write("   vertex " + innerStlFaces.get(loopi).VertexList.get(loopj).toString() + "\n");
+                }
+                writer.write("  endloop\n");
+                //write endfacet
+                writer.write(" endfacet\n");
+            }
+
+
+
+
+            //write stl endsolid
+            writer.write("endsolid");
+
+
+
+        } catch (IOException ex) {
+            // report
+        }
+        finally {
+            try {
+                writer.close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+    }
+
+
+
     /**
      * construct inner structure
      * */
@@ -116,6 +181,15 @@ public class stlBuild {
         createInnerVertexBasedOnNeighbourFace();
         createInnerFaces();
     }
+
+    /**
+     * construct inner structure for test
+     * */
+    public void constructInnerStructureForTest(){
+        createInnerVertexBasedOnNeighbourFace();
+        createInnerFacesForTest();
+    }
+
 
 
     /**
@@ -165,7 +239,8 @@ public class stlBuild {
             //add the new shifted vertex into inner vertex list
             addInnerVertex(newVertex);
         }
-
+        System.out.println("Number of vertices in innerVertexList: "+innerVertexList.size());
+        System.out.println("Number of vertices in outerVertexList: "+outerVertexList.size());
     }
 
     /**
@@ -179,6 +254,27 @@ public class stlBuild {
             for(loopi=(outerface.VertexList.size()-1);loopi>=0;loopi--){
                 //get the index of outerface's vertex
                 int index = outerface.VertexList.get(loopi).index;
+                //add the inner vertex with the same index into the vertexlist
+                vertexlist.add(innerVertexList.get(index));
+            }
+            //create a new facet
+            stlFace newInnerFace = new stlFace(vertexlist);
+            //add the face into the innerFaces
+            addInnerStlFace(newInnerFace);
+        }
+    }
+
+    /**
+     *create inner faces using inner verteices and the index of outer vertices
+     * */
+    public void createInnerFacesForTest(){
+        for (stlFace outerface:outerStlFaces){
+            int loopi = 2;
+            ArrayList<VertexGeometric> vertexlist = new ArrayList<VertexGeometric>();
+            //iterate the vertexlist of outer face in a ORIGINAL order so that the face normal changes direction
+            for(VertexGeometric v:outerface.VertexList){
+                //get the index of outerface's vertex
+                int index = v.index;
                 //add the inner vertex with the same index into the vertexlist
                 vertexlist.add(innerVertexList.get(index));
             }

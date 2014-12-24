@@ -18,6 +18,7 @@ public class converter {
 
         String filename;
         String stlfilename;
+        String innerStlFileName;
         int loopi=0;
 
         System.out.println("Welcome to the 3D converter!");
@@ -25,6 +26,7 @@ public class converter {
         filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.obj";
 
         stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.stl";
+        innerStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/innerwheel.stl";
 
         System.err.println("LOADING FILE " + filename);
         try {
@@ -106,6 +108,8 @@ public class converter {
 
             //write stl file
             stlbuilder.writeStl(stlfilename);
+            //write inner stl file
+            stlbuilder.writeInnerStl(innerStlFileName);
 
 //            System.out.println(stlbuilder.outerVertexList);
 //            System.out.println(builder.verticesG);
