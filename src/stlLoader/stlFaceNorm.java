@@ -29,6 +29,18 @@ public class stlFaceNorm {
         return new stlFaceNorm(-this.x,-this.y,-this.z);
     }
 
+    public void dividedBy(float div){
+        this.x = this.x/div;
+        this.y = this.y/div;
+        this.z = this.z/div;
+    }
+
+    public void multiple(float mul){
+        this.x = this.x*mul;
+        this.y = this.y*mul;
+        this.z = this.z*mul;
+    }
+
     public String toString() {
         if(null == this)
             return "null";

@@ -18,6 +18,7 @@ public class stlBuild {
     public ArrayList<stlFace> innerStlFaces = new ArrayList<stlFace>();
     public ArrayList<VertexGeometric> outerVertexList = null;
     public ArrayList<VertexGeometric> innerVertexList = new ArrayList<VertexGeometric>();
+    public float thickness = 0.02f;
 
     public void addOuterStlFace(stlFace face){
         this.outerStlFaces.add(face);
@@ -111,7 +112,7 @@ public class stlBuild {
 
 
     /**
-     * write stl file
+     * write stl file for inner model
      * */
     public void writeInnerStl(String filename){
 
@@ -216,6 +217,7 @@ public class stlBuild {
      * */
     public void createInnerVertexBasedOnNeighbourFace(){
         int loopi = 0;
+        float length = 0;
         //create a shrunk vertex for every outer vertex
         for (loopi=0;loopi<outerVertexList.size();loopi++){
             //using neighbours vertex
@@ -232,6 +234,11 @@ public class stlBuild {
                  */
                 shiftingVector.add(neighbourface.normal.reverse().x,neighbourface.normal.reverse().y,neighbourface.normal.reverse().z);
             }
+            //normalize the vector
+            length = (float)Math.sqrt((double)(shiftingVector.x*shiftingVector.x+shiftingVector.y*shiftingVector.y+shiftingVector.z*shiftingVector.z));
+            shiftingVector.dividedBy(length);
+            //assign thickness of the layer
+            shiftingVector.multiple(thickness);
             /**
              * shift the vertex
              */
