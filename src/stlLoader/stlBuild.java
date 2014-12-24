@@ -18,7 +18,7 @@ public class stlBuild {
     public ArrayList<stlFace> innerStlFaces = new ArrayList<stlFace>();
     public ArrayList<VertexGeometric> outerVertexList = null;
     public ArrayList<VertexGeometric> innerVertexList = new ArrayList<VertexGeometric>();
-    public float thickness = 0.02f;
+    public float thickness = 0.01f;
 
     public void addOuterStlFace(stlFace face){
         this.outerStlFaces.add(face);
@@ -46,6 +46,13 @@ public class stlBuild {
             System.err.println("ArrayList of outerStlFace is null.");
         }
         else {
+            /**
+             * if innerstlfaces is empty, construct one
+             * */
+            if (innerStlFaces.isEmpty()){
+                System.err.println("ArrayList of innerStlFace is null.");
+                constructInnerStructure();
+            }
 
             Writer writer = null;
 
@@ -57,6 +64,9 @@ public class stlBuild {
                 writer.write("solid shape\n");
 
                 for(loopi=0;loopi< outerStlFaces.size();loopi++){
+                    /**
+                     * write outer face
+                     * */
                     //write face normal
                     writer.write(" facet normal " + outerStlFaces.get(loopi).normal.toString() + "\n");
                     //write vertices
@@ -67,14 +77,9 @@ public class stlBuild {
                     writer.write("  endloop\n");
                     //write endfacet
                     writer.write(" endfacet\n");
-                }
-
-                if (innerStlFaces.isEmpty()){
-                    System.err.println("ArrayList of innerStlFace is null.");
-                    constructInnerStructure();
-                }
-
-                for(loopi=0;loopi< innerStlFaces.size();loopi++){
+                    /**
+                     * write co-responding inner face
+                     * */
                     //write face normal
                     writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
                     //write vertices
@@ -86,8 +91,6 @@ public class stlBuild {
                     //write endfacet
                     writer.write(" endfacet\n");
                 }
-
-
 
 
                 //write stl endsolid
