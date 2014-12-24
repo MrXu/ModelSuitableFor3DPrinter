@@ -17,7 +17,10 @@ public class VertexGeometric {
     public float z = 0;
     //the array index in the vertex list
     public int index = 0;
-    //linkedhashset of neighbouring facets
+    /**
+     * LinkedHashSet of neighbouring facets
+     * added by stlbuilder class
+     **/
     public LinkedHashSet<stlFace> neighbourFaces = new LinkedHashSet<stlFace>();
     //the linkedhashset of neighbours
     public LinkedHashSet<VertexGeometric> neighbourVertices = new LinkedHashSet<VertexGeometric>();
@@ -35,6 +38,19 @@ public class VertexGeometric {
 
     public void addNeighbourFace(stlFace face){
         neighbourFaces.add(face);
+    }
+
+    public void shiftByVector(float x,float y,float z){
+        this.x += x;
+        this.y += y;
+        this.z += z;
+    }
+
+    public void copyThisVertex(VertexGeometric copiedVertex){
+        this.x = copiedVertex.x;
+        this.y = copiedVertex.y;
+        this.z = copiedVertex.z;
+        this.index = copiedVertex.index;
     }
 
     public String toString() {

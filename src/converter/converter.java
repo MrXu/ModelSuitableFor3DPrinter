@@ -22,9 +22,9 @@ public class converter {
 
         System.out.println("Welcome to the 3D converter!");
 
-        filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/dumbell/dumbell.obj";
+        filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.obj";
 
-        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/dumbell/dumbell.stl";
+        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.stl";
 
         System.err.println("LOADING FILE " + filename);
         try {
@@ -40,7 +40,10 @@ public class converter {
 //            System.out.println(builder.objectName);
 
 
-            //calculate the vector to shift
+            /**
+             * shifting the obj objects to be positive
+             * calculating the shifting vector
+             * */
             VertexGeometric shiftingVector = new VertexGeometric(0,0,0,-1);
             for(loopi=0;loopi<builder.verticesG.size();loopi++){
                 if (builder.verticesG.get(loopi).x<shiftingVector.x){
@@ -54,7 +57,6 @@ public class converter {
                 }
             }
             System.out.println(shiftingVector.toString());
-
 
             // shift all vertices to be in the positive space
             System.out.println("*****"+builder.verticesG.size()+" vertices *****");
@@ -76,7 +78,9 @@ public class converter {
             System.out.println("*****"+builder.faces.size()+" faces *****");
 
 
-            //convert obj objects to stl objects
+            /**
+             * convert obj objects to stl objects by creating stlFaces for outerStlFaces
+             * */
             for(loopi=0;loopi<builder.faces.size();loopi++){
 
                 //System.out.println(builder.faces.get(loopi).toString());
@@ -89,15 +93,15 @@ public class converter {
                 }
                 stlFace tempFace = new stlFace(VertexList);
 //                System.out.println(tempFace.toString());
-                stlbuilder.addStlFace(tempFace);
+                stlbuilder.addOuterStlFace(tempFace);
 
             }
             /**
-               create neighbouring facets for every vertex
+             * create neighbouring facets for every vertex
              */
             stlbuilder.createNeighbourFaces();
 
-            System.out.println("-----stl file has "+stlbuilder.stlFaces.size()+" faces------");
+            System.out.println("-----stl file has "+stlbuilder.outerStlFaces.size()+" faces------");
 
 
             //write stl file

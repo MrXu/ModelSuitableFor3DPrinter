@@ -25,6 +25,10 @@ public class stlFaceNorm {
         this.z = z;
     }
 
+    public stlFaceNorm reverse(){
+        return new stlFaceNorm(-this.x,-this.y,-this.z);
+    }
+
     public String toString() {
         if(null == this)
             return "null";
