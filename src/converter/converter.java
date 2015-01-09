@@ -118,7 +118,8 @@ public class converter {
 //                System.out.println(face);
 //            }
 
-
+            System.out.println("------- center of mass -------");
+            System.out.println(stlbuilder.calculateMassCenterByPyramid());
 
 
 

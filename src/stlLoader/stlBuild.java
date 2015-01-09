@@ -316,4 +316,50 @@ public class stlBuild {
     }
 
 
+    /**
+     * calculate the center of mass based on triangular pyramid
+     */
+    public VertexGeometric calculateMassCenterByPyramid(){
+
+        //create a combined arraylist of stlfaces
+        ArrayList<stlFace> stlFaces = new ArrayList<stlFace>(this.innerStlFaces);
+        stlFaces.addAll(this.outerStlFaces);
+
+        //initiate the center of mass
+        VertexGeometric massCenter = new VertexGeometric(-1,-1,-1,-1);
+        //initiate the total volume
+        float totalVolume = 0;
+        //initiate the current volume
+        float currentVolume = 0;
+
+        if (this.innerStlFaces.isEmpty()){
+            System.err.println("Inner stlFaces has not been calculated.");
+            return massCenter;
+        }
+        else{
+            for(stlFace face:stlFaces){
+                VertexGeometric p1 = face.VertexList.get(0);
+                VertexGeometric p2 = face.VertexList.get(1);
+                VertexGeometric p3 = face.VertexList.get(2);
+                //calculate current volume based on Tetrahedron
+                currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y+p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+                //accumulate total volume
+                totalVolume += currentVolume;
+                //accumulate mass center coordinates
+                massCenter.x += ((p1.x+p2.x+p3.x)/4)*currentVolume;
+                massCenter.y += ((p1.y+p2.y+p3.y)/4)*currentVolume;
+                massCenter.z += ((p1.z+p2.z+p3.z)/4)*currentVolume;
+            }
+            massCenter.x = massCenter.x/totalVolume;
+            massCenter.y = massCenter.y/totalVolume;
+            massCenter.z = massCenter.z/totalVolume;
+            return massCenter;
+        }
+
+
+    }
+
+
+
+
 }
