@@ -360,6 +360,40 @@ public class stlBuild {
     }
 
 
+    /**
+     * find vertices on the same plate
+     */
+    public ArrayList<VertexGeometric> findVerticesOnPlate(stlFace baseFace){
+
+        //the list of vertices to return
+        ArrayList<VertexGeometric> verticesList = new ArrayList<VertexGeometric>();
+        //the base point to construct vector
+        VertexGeometric basePoint = baseFace.VertexList.get(0);
+        //the base normal to compute dot product
+        stlFaceNorm baseNorm = baseFace.getFaceNorm();
+
+        //iterate through the list of vertices to check
+        float x=0;
+        float y=0;
+        float z=0;
+        float dotproduct = 1;
+        for(VertexGeometric vertex:this.outerVertexList){
+            //the computed vector (vertex - baseVertex)
+            x = vertex.x - basePoint.x;
+            y = vertex.y - basePoint.y;
+            z = vertex.z - basePoint.z;
+
+            //check if cross dot product is zero
+            dotproduct = x*baseNorm.x+y*baseNorm.y+z*baseNorm.z;
+            if (dotproduct == 0){
+                verticesList.add(vertex);
+            }
+
+        }
+
+        return verticesList;
+
+    }
 
 
 }

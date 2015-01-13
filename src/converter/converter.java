@@ -118,8 +118,17 @@ public class converter {
 //                System.out.println(face);
 //            }
 
+
+            /**
+             * testing purpose, to be deleted
+             */
             System.out.println("------- center of mass -------");
             System.out.println(stlbuilder.calculateMassCenterByPyramid());
+
+            System.out.println("------- list of vertices on the plate -------");
+            stlFace theFace = stlbuilder.outerStlFaces.get(0);
+            System.out.println(stlbuilder.findVerticesOnPlate(theFace));
+            System.out.println(theFace.VertexList);
 
 
 
