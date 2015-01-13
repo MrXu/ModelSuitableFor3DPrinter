@@ -362,6 +362,7 @@ public class stlBuild {
 
     /**
      * find vertices on the same plate
+     * algo: lines on a plate is always perpendicular to the normal of the plate
      */
     public ArrayList<VertexGeometric> findVerticesOnPlate(stlFace baseFace){
 
@@ -392,6 +393,120 @@ public class stlBuild {
         }
 
         return verticesList;
+
+    }
+
+    /**
+     * rotate model based on the selected surface
+     */
+    public void rotateModelSurface(stlFace baseFace){
+
+        float tempX;
+        float tempY;
+        float tempZ;
+        float cosAroundX;
+        float sinAroundX;
+        float cosAroundZ;
+        float sinAroundZ;
+
+        stlFaceNorm baseNorm = baseFace.getFaceNorm();
+
+        float baseNormLength = (float)Math.sqrt(baseNorm.x*baseNorm.x+baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
+
+        //first, rotate around x; cos and sin computed based on baseNormal
+        cosAroundX = (float)baseNorm.y/(float)Math.sqrt(baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
+        sinAroundX = -(float)baseNorm.z/(float)Math.sqrt(baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
+
+        //second, rotate around z; cos and sin computed based on baseNormal
+        sinAroundZ = (float)baseNorm.x/baseNormLength;
+        if (baseNorm.y<0){
+            cosAroundZ = -(float)Math.sqrt(1-sinAroundZ*sinAroundZ);
+        }else{
+            cosAroundZ = (float)Math.sqrt(1-sinAroundZ*sinAroundZ);
+        }
+
+
+        if (baseNorm.x==0 & baseNorm.z==0){
+            return;
+        }
+        else{
+            tempX = tempY = tempZ = 0;
+
+            //rotate outerVertexList
+            for (VertexGeometric vertex:this.outerVertexList){
+
+                //rotate around x axis
+                tempX = vertex.x;
+                tempY = vertex.y*cosAroundX - vertex.z*sinAroundX;
+                tempZ = vertex.y*sinAroundX + vertex.z*cosAroundX;
+                vertex.x = tempX;
+                vertex.y = tempY;
+                vertex.z = tempZ;
+
+                //rotate around z axis
+                tempX = vertex.x*cosAroundZ - vertex.y*sinAroundZ;
+                tempY = vertex.x*sinAroundZ + vertex.y*cosAroundZ;
+                tempZ = vertex.z;
+                vertex.x = tempX;
+                vertex.y = tempY;
+                vertex.z = tempZ;
+            }
+
+            //rotate innerVertexList
+            for (VertexGeometric vertex:this.innerVertexList){
+
+                //rotate around x axis
+                tempX = vertex.x;
+                tempY = vertex.y*cosAroundX - vertex.z*sinAroundX;
+                tempZ = vertex.y*sinAroundX + vertex.z*cosAroundX;
+                vertex.x = tempX;
+                vertex.y = tempY;
+                vertex.z = tempZ;
+
+                //rotate around z axis
+                tempX = vertex.x*cosAroundZ - vertex.y*sinAroundZ;
+                tempY = vertex.x*sinAroundZ + vertex.y*cosAroundZ;
+                tempZ = vertex.z;
+                vertex.x = tempX;
+                vertex.y = tempY;
+                vertex.z = tempZ;
+            }
+
+        }
+
+    }
+
+    /**
+     * shift the model to the positive region
+     */
+    public void shiftToPositiveRegion(){
+
+        VertexGeometric shiftingVector = new VertexGeometric(0,0,0,-1);
+
+        //compute the vector to shift
+        for (VertexGeometric vertex : this.outerVertexList){
+            if (vertex.x<shiftingVector.x){
+                shiftingVector.x = vertex.x;
+            }
+            if (vertex.y<shiftingVector.y){
+                shiftingVector.y = vertex.y;
+            }
+            if (vertex.z<shiftingVector.z){
+                shiftingVector.z = vertex.z;
+            }
+        }
+
+        //shift all vertices
+        for (VertexGeometric outvertex:this.outerVertexList){
+            outvertex.x = outvertex.x - shiftingVector.x;
+            outvertex.y = outvertex.y - shiftingVector.y;
+            outvertex.z = outvertex.z - shiftingVector.z;
+        }
+        for (VertexGeometric invertex:this.outerVertexList){
+            invertex.x = invertex.x - shiftingVector.x;
+            invertex.y = invertex.y - shiftingVector.y;
+            invertex.z = invertex.z - shiftingVector.z;
+        }
 
     }
 
