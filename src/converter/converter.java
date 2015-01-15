@@ -129,6 +129,18 @@ public class converter {
             stlFace theFace = stlbuilder.outerStlFaces.get(0);
             System.out.println(stlbuilder.findVerticesOnPlate(theFace));
             System.out.println(theFace.VertexList);
+            System.out.println("------- rotateing model ---------");
+            stlbuilder.rotateModelSurface(theFace);
+            System.out.println("------- shifting model ---------");
+            stlbuilder.shiftToPositiveRegion();
+            System.out.println("------- base surface ---------");
+            System.out.println(theFace);
+            System.out.println("------- writing stl files ---------");
+            //write stl file
+            stlbuilder.writeStl(stlfilename);
+            //write inner stl file
+            stlbuilder.writeInnerStl(innerStlFileName);
+
 
 
 

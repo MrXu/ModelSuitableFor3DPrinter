@@ -219,6 +219,10 @@ public class stlBuild {
      * inner vertices creation based on neighbouring faces
      * */
     public void createInnerVertexBasedOnNeighbourFace(){
+        //clear the innervertexlist
+        ArrayList<VertexGeometric> newinnerVertexList = new ArrayList<VertexGeometric>();
+        this.innerVertexList = newinnerVertexList;
+
         int loopi = 0;
         float length = 0;
         //create a shrunk vertex for every outer vertex
@@ -410,20 +414,18 @@ public class stlBuild {
         float sinAroundZ;
 
         stlFaceNorm baseNorm = baseFace.getFaceNorm();
+        Rotation modelRotation = new Rotation(baseNorm);
+        cosAroundX = modelRotation.cosAroundX;
+        sinAroundX = modelRotation.sinAroundX;
+        cosAroundZ = modelRotation.cosAroundZ;
+        sinAroundZ = modelRotation.sinAroundZ;
 
-        float baseNormLength = (float)Math.sqrt(baseNorm.x*baseNorm.x+baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
-
-        //first, rotate around x; cos and sin computed based on baseNormal
-        cosAroundX = (float)baseNorm.y/(float)Math.sqrt(baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
-        sinAroundX = -(float)baseNorm.z/(float)Math.sqrt(baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z);
-
-        //second, rotate around z; cos and sin computed based on baseNormal
-        sinAroundZ = (float)baseNorm.x/baseNormLength;
-        if (baseNorm.y<0){
-            cosAroundZ = -(float)Math.sqrt(1-sinAroundZ*sinAroundZ);
-        }else{
-            cosAroundZ = (float)Math.sqrt(1-sinAroundZ*sinAroundZ);
-        }
+        //testing
+        System.out.println(baseNorm);
+        System.out.println(cosAroundX);
+        System.out.println(sinAroundX);
+        System.out.println(cosAroundZ);
+        System.out.println(sinAroundZ);
 
 
         if (baseNorm.x==0 & baseNorm.z==0){
@@ -450,6 +452,7 @@ public class stlBuild {
                 vertex.x = tempX;
                 vertex.y = tempY;
                 vertex.z = tempZ;
+
             }
 
             //rotate innerVertexList
@@ -496,16 +499,26 @@ public class stlBuild {
             }
         }
 
+        //print
+        System.out.println(shiftingVector);
+
         //shift all vertices
         for (VertexGeometric outvertex:this.outerVertexList){
             outvertex.x = outvertex.x - shiftingVector.x;
             outvertex.y = outvertex.y - shiftingVector.y;
             outvertex.z = outvertex.z - shiftingVector.z;
+
+            //testing
+            System.out.println(outvertex);
+
         }
-        for (VertexGeometric invertex:this.outerVertexList){
+        for (VertexGeometric invertex:this.innerVertexList){
             invertex.x = invertex.x - shiftingVector.x;
             invertex.y = invertex.y - shiftingVector.y;
             invertex.z = invertex.z - shiftingVector.z;
+
+            //testing
+            System.out.println(invertex);
         }
 
     }
