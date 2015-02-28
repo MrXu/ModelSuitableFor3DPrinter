@@ -19,6 +19,7 @@ public class stlBuild {
     public ArrayList<VertexGeometric> outerVertexList = null;
     public ArrayList<VertexGeometric> innerVertexList = new ArrayList<VertexGeometric>();
     public float thickness = 0.01f;
+    public float minThicknessUnit = 0.005f;
 
     public void addOuterStlFace(stlFace face){
         this.outerStlFaces.add(face);
@@ -67,18 +68,11 @@ public class stlBuild {
          * 2) if no, modify the distance of inner vertices shifting
          */
         if (!IsMassCenterInsideBaseFace(baseFace)){
-           System.out.print("pass");
+            adjustThicknessContinuously(baseFace);
+            System.out.println("Finish adjusting thickness.");
         }
 
-        System.out.println("--------- points on the plate --------");
-        System.out.println(baseFace);
-        System.out.print(baseFace.calculateNorm());
-        System.out.println(findVerticesOnPlate(baseFace));
-        System.out.println(IsMassCenterInsideBaseFace(baseFace));
 
-        minimumDistanceTest();
-
-        adjustThicknessTest();
     }
 
 
@@ -637,6 +631,11 @@ public class stlBuild {
     }
 
 
+
+
+
+
+
     /**
      * minimum distance of a point to a line segment, based on x and z.
      * return a vector pointing from the vertex to the nearest point on the line segment
@@ -698,6 +697,38 @@ public class stlBuild {
     }
 
 
+
+
+
+
+
+    /**
+     * continuously adjust the thickness of model
+     * to ensure mass center is inside the hull polygon of base surface.
+     * while maintaining the integrity of model (thickness cannot be smaller than minimum thickness unit)
+     * @param baseface
+     */
+    public void adjustThicknessContinuously(stlFace baseface){
+        boolean insidePolygon = IsMassCenterInsideBaseFace(baseface);
+        // set the movingThickness
+        float movingThickness = this.minThicknessUnit;
+        // limit the number of adjustment to make sure the model is still safe
+        int adjustLimit = (int)((this.thickness-this.minThicknessUnit)/this.minThicknessUnit);
+        int adjustCount = 0;
+
+        while(!insidePolygon){
+            if (adjustCount>=adjustLimit){
+                System.err.println("Unable to adjust! Please select another surface to be the base surface");
+                break;
+            }
+            //adjust thickness
+            adjustThickness(baseface,movingThickness);
+            //increment adjust count
+            adjustCount = adjustCount+1;
+            //re-evaluate whether mass center is inside the hull polygon of base surface
+            insidePolygon = IsMassCenterInsideBaseFace(baseface);
+        }
+    }
     /**
      * adjust the thickness of model
      * to ensure mass center is inside hull polygon
