@@ -639,6 +639,7 @@ public class stlBuild {
 
     /**
      * minimum distance of a point to a line segment, based on x and z.
+     * return a vector pointing from the vertex to the nearest point on the line segment
      * @param v
      * @param head
      * @param tail
@@ -702,7 +703,7 @@ public class stlBuild {
      * to ensure mass center is inside hull polygon
      * @param baseface
      */
-    public void adjustThickness(stlFace baseface){
+    public void adjustThickness(stlFace baseface, float movingThickness){
         //get mass center
         VertexGeometric massCenter = calculateMassCenterByPyramid();
 
@@ -716,6 +717,9 @@ public class stlBuild {
         float minimumDistance = Float.MAX_VALUE;
         stlVector tempVector;
 
+        /**
+         * find the shifting vector with shortest distance
+         */
         //loop through to find the best vector to move
         //the sequence is assumed to be
         for(int i=0;i<vlist.size()-1;i++){
@@ -732,7 +736,30 @@ public class stlBuild {
             shiftingVector = tempVector;
         }
 
-        System.out.println(shiftingVector.toString());
+        System.out.println("The shifting vector: "+shiftingVector.toString());
+
+        /**
+         * based on which side the vertices are,
+         * shifting the inner vertices closer to outer vertices
+         */
+        //determine which side the inner vertices are relative to the plane
+        VertexGeometric pointOnPlane = shiftingVector.moveVertxXZ(massCenter);
+        stlVector vectorTemp;
+        for (VertexGeometric v:this.innerVertexList){
+            vectorTemp = new stlVector(pointOnPlane,v);
+            float dotProduct = vectorTemp.dotProduct(shiftingVector);
+            //dotproduct < 0 means v is on the side whose thickness needs to be reduces
+            if (dotProduct<0){
+                VertexGeometric outerV = this.outerVertexList.get(v.index);
+                stlVector movingVector = new stlVector(v,outerV);
+                //scale by the specified movingThickness
+                movingVector.scaleAsUnitVector(movingThickness);
+                //change the original inner vertex's x,y,z
+                v.x = v.x+movingVector.x;
+                v.y = v.y+movingVector.y;
+                v.z = v.z+movingVector.z;
+            }
+        }
 
     }
     //solely for testing purpose, to be deleted

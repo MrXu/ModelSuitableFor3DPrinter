@@ -22,6 +22,12 @@ public class stlVector {
         this.z = to.z-from.z;
     }
 
+    public stlVector(float x, float y, float z){
+        this.x=x;
+        this.y=y;
+        this.z=z;
+    }
+
     public float dotProduct(stlVector vec){
         float result;
         result = (x*vec.x)+(y*vec.y)+(z*vec.z);
@@ -36,6 +42,31 @@ public class stlVector {
 
     public float getLengthXZ(){
         return (float)Math.sqrt((double)(this.x*this.x+this.z*this.z));
+    }
+
+    public float getLength(){
+        return (float)Math.sqrt((double)(this.x*this.x+this.y*this.y+this.z*this.z));
+    }
+
+    public VertexGeometric moveVertxXZ(VertexGeometric v){
+        float x = v.x+this.x;
+        float y = 0.00f;
+        float z = v.z+this.z;
+        return new VertexGeometric(x,y,z,-1);
+    }
+
+    public void normalize(){
+        float length = getLength();
+        this.x = this.x/length;
+        this.y = this.y/length;
+        this.z = this.z/length;
+    }
+
+    public void scaleAsUnitVector(float length){
+        normalize();
+        this.x = this.x*length;
+        this.y = this.y*length;
+        this.z = this.z*length;
     }
 
     public String toString(){
