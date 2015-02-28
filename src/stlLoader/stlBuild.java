@@ -67,7 +67,7 @@ public class stlBuild {
          * 2) if no, modify the distance of inner vertices shifting
          */
         if (!IsMassCenterInsideBaseFace(baseFace)){
-
+           System.out.print("pass");
         }
 
         System.out.println("--------- points on the plate --------");
@@ -76,6 +76,9 @@ public class stlBuild {
         System.out.println(findVerticesOnPlate(baseFace));
         System.out.println(IsMassCenterInsideBaseFace(baseFace));
 
+        minimumDistanceTest();
+
+        adjustThicknessTest();
     }
 
 
@@ -634,6 +637,145 @@ public class stlBuild {
     }
 
 
+    /**
+     * minimum distance of a point to a line segment, based on x and z.
+     * @param v
+     * @param head
+     * @param tail
+     * @return
+     */
+    private stlVector minimumDistance(VertexGeometric v,VertexGeometric head,VertexGeometric tail){
+        float dist;
+
+        //square of line segment length
+        float lineLengthSqr = (head.x-tail.x)*(head.x-tail.x) + (head.z-tail.z)*(head.z-tail.z);
+        //head and tail overlaps
+        if(lineLengthSqr==0){
+//            dist = (float)Math.sqrt((double)((v.x-tail.x)*(v.x-tail.x) + (v.z-tail.z)*(v.z-tail.z)));
+            return new stlVector(v,head);
+        }
+
+        //head and tail does not overlap
+        stlVector vecA = new stlVector(head,v);
+        stlVector vecB = new stlVector(head,tail);
+        float dotProduct = vecA.dotProductXZ(vecB);
+        float projectionOverLength = dotProduct/lineLengthSqr;
+
+        //beyond head end
+        if (projectionOverLength<0.0){
+            //distance in terms of x,z dimension
+            return new stlVector(v,head);
+            //return (float)Math.sqrt((double)((v.x-head.x)*(v.x-head.x) + (v.z-head.z)*(v.z-head.z)));
+        }
+        //beyond tail end
+        else if (projectionOverLength>1.0){
+            return new stlVector(v,tail);
+//            return (float)Math.sqrt((double)((v.x-tail.x)*(v.x-tail.x) + (v.z-tail.z)*(v.z-tail.z)));
+        }
+        //falls in between
+        else{
+            //calculate projection point on the line segment
+            VertexGeometric projectionPoint = new VertexGeometric(-1,-1,-1,-1);
+            projectionPoint.x = projectionOverLength*vecB.x + head.x;
+            projectionPoint.y = projectionOverLength*vecB.y + head.y;
+            projectionPoint.z = projectionOverLength*vecB.z + head.z;
+
+            return new stlVector(v,projectionPoint);
+            //calculate distance in terms of x,z dimension
+//            return (float)Math.sqrt((double)((v.x-projectionPoint.x)*(v.x-projectionPoint.x) + (v.z-projectionPoint.z)*(v.z-projectionPoint.z)));
+        }
+
+    }
+    //solely for testing purpose, to be deleted
+    private void  minimumDistanceTest(){
+        VertexGeometric v = new VertexGeometric(-1,0,2,-1);
+        VertexGeometric head = new VertexGeometric(0,0,0,-1);
+        VertexGeometric tail = new VertexGeometric(4,0,0,-1);
+
+        System.out.println("------ test minimum distance from a point to line segment ------");
+        System.out.println(minimumDistance(v, head, tail).toString());
+    }
+
+
+    /**
+     * adjust the thickness of model
+     * to ensure mass center is inside hull polygon
+     * @param baseface
+     */
+    public void adjustThickness(stlFace baseface){
+        //get mass center
+        VertexGeometric massCenter = calculateMassCenterByPyramid();
+
+        //get list hull polygon
+        quickHull hullFunction = new quickHull();
+        ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(findVerticesOnPlate(baseface));
+        System.out.println(vlist);
+
+        //initialize shifting vector with random value
+        stlVector shiftingVector = new stlVector(vlist.get(0),vlist.get(1));
+        float minimumDistance = Float.MAX_VALUE;
+        stlVector tempVector;
+
+        //loop through to find the best vector to move
+        //the sequence is assumed to be
+        for(int i=0;i<vlist.size()-1;i++){
+            tempVector = minimumDistance(massCenter,vlist.get(i),vlist.get(i+1));
+            //find the vector with shortest length
+            if (minimumDistance>tempVector.getLengthXZ()){
+                minimumDistance = tempVector.getLengthXZ();
+                shiftingVector = tempVector;
+            }
+        }
+        //compare with last to first
+        tempVector = minimumDistance(massCenter,vlist.get(vlist.size()-1),vlist.get(0));
+        if (minimumDistance>tempVector.getLengthXZ()){
+            shiftingVector = tempVector;
+        }
+
+        System.out.println(shiftingVector.toString());
+
+    }
+    //solely for testing purpose, to be deleted
+    private void adjustThicknessTest(){
+        ArrayList<VertexGeometric> vexlist = new ArrayList<VertexGeometric>();
+        vexlist.add(new VertexGeometric(0,0,0,-1));
+        vexlist.add(new VertexGeometric(4,0,0,-1));
+        vexlist.add(new VertexGeometric(4,0,4,-1));
+        vexlist.add(new VertexGeometric(2,0,2,-1));
+        vexlist.add(new VertexGeometric(0,0,4,-1));
+
+        VertexGeometric center = new VertexGeometric(-1,0,3,-1);
+
+        //get list hull polygon
+        quickHull hullFunction = new quickHull();
+        ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(vexlist);
+        System.out.println(vlist);
+
+        //initialize shifting vector with random value
+        stlVector shiftingVector = new stlVector(vlist.get(0),vlist.get(1));
+        float minimumDistance = Float.MAX_VALUE;
+        stlVector tempVector;
+
+        //loop through to find the best vector to move
+        //the sequence is assumed to be
+        for(int i=0;i<vlist.size()-1;i++){
+            tempVector = minimumDistance(center,vlist.get(i),vlist.get(i+1));
+            //find the vector with shortest length
+            if (minimumDistance>tempVector.getLengthXZ()){
+                minimumDistance = tempVector.getLengthXZ();
+                shiftingVector = tempVector;
+            }
+        }
+        //compare with last to first
+        tempVector = minimumDistance(center,vlist.get(vlist.size()-1),vlist.get(0));
+        if (minimumDistance>tempVector.getLengthXZ()){
+            shiftingVector = tempVector;
+        }
+
+        System.out.println(shiftingVector.toString());
+
+
+    }
 
 
 }
