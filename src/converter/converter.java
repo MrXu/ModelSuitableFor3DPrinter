@@ -43,6 +43,7 @@ public class converter {
 
 
             /**
+             * STEP 1:
              * shifting the obj objects to be positive
              * calculating the shifting vector
              * */
@@ -81,6 +82,7 @@ public class converter {
 
 
             /**
+             * STEP 2:
              * convert obj objects to stl objects by creating stlFaces for outerStlFaces
              * */
             for(loopi=0;loopi<builder.faces.size();loopi++){
@@ -98,48 +100,54 @@ public class converter {
                 stlbuilder.addOuterStlFace(tempFace);
 
             }
+
             /**
-             * create neighbouring facets for every vertex
+             * STEP 3:
+             * select the base surface
              */
-            stlbuilder.createNeighbourFaces();
+            stlFace baseFace = stlbuilder.outerStlFaces.get(0);
 
-            System.out.println("-----stl file has "+stlbuilder.outerStlFaces.size()+" faces------");
+            /**
+             * STEP 4:
+             * stlbuilder process
+             */
+            stlbuilder.process(baseFace);
 
-
+            /**
+             * STEP 5:
+             * write stl files
+             */
             //write stl file
             stlbuilder.writeStl(stlfilename);
             //write inner stl file
             stlbuilder.writeInnerStl(innerStlFileName);
 
-//            System.out.println(stlbuilder.outerVertexList);
-//            System.out.println(builder.verticesG);
-//            System.out.println(stlbuilder.outerVertexList.get(0).neighbourVertices);
-//            for (stlFace face:stlbuilder.outerVertexList.get(1).neighbourFaces){
-//                System.out.println(face);
-//            }
 
 
             /**
              * testing purpose, to be deleted
              */
-            System.out.println("------- center of mass -------");
-            System.out.println(stlbuilder.calculateMassCenterByPyramid());
-
-            System.out.println("------- list of vertices on the plate -------");
-            stlFace theFace = stlbuilder.outerStlFaces.get(0);
-            System.out.println(stlbuilder.findVerticesOnPlate(theFace));
-            System.out.println(theFace.VertexList);
-            System.out.println("------- rotateing model ---------");
-            stlbuilder.rotateModelSurface(theFace);
-            System.out.println("------- shifting model ---------");
-            stlbuilder.shiftToPositiveRegion();
-            System.out.println("------- base surface ---------");
-            System.out.println(theFace);
-            System.out.println("------- writing stl files ---------");
-            //write stl file
-            stlbuilder.writeStl(stlfilename);
-            //write inner stl file
-            stlbuilder.writeInnerStl(innerStlFileName);
+//            System.out.println("------- center of mass -------");
+//            System.out.println(stlbuilder.calculateMassCenterByPyramid());
+//
+//            System.out.println("------- list of vertices on the plate -------");
+//            stlFace theFace = stlbuilder.outerStlFaces.get(0);
+//            System.out.println(stlbuilder.findVerticesOnPlate(theFace));
+//            System.out.println(theFace.VertexList);
+//            System.out.println("------- rotateing model ---------");
+//            stlbuilder.rotateModelSurface(theFace);
+//            System.out.println("------- shifting model ---------");
+//            stlbuilder.shiftToPositiveRegion();
+//            System.out.println("------- base surface ---------");
+//            System.out.println(theFace);
+//            System.out.println("------- test IsInsidePolygon ---------");
+//            System.out.println(stlbuilder.testIsInsidePolygon());
+//            System.out.println(stlbuilder.IsMassCenterInsideBaseFace(theFace));
+//            System.out.println("------- writing stl files ---------");
+//            //write stl file
+//            stlbuilder.writeStl(stlfilename);
+//            //write inner stl file
+//            stlbuilder.writeInnerStl(innerStlFileName);
 
 
 

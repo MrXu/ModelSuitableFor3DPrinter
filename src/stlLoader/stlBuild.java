@@ -34,6 +34,53 @@ public class stlBuild {
     }
 
 
+
+    public void process(stlFace baseFace){
+        /**
+         * STEP 1:
+         * create neighbouring facets for every vertex
+         */
+        createNeighbourFaces();
+
+        /**
+         * STEP 2:
+         * construct inner structure
+         */
+        constructInnerStructure();
+
+        /**
+         * STEP 4:
+         * rotate the model based on the selected basesurface
+         */
+        rotateModelSurface(baseFace);
+
+        /**
+         * STEP 5:
+         * shift the model to positive region
+         */
+        shiftToPositiveRegion();
+
+        /**
+         * STEP 6:
+         * judge whether mass center is inside the polygon
+         * 1) if yes, do nothing
+         * 2) if no, modify the distance of inner vertices shifting
+         */
+        if (!IsMassCenterInsideBaseFace(baseFace)){
+
+        }
+
+        System.out.println("--------- points on the plate --------");
+        System.out.println(baseFace);
+        System.out.print(baseFace.calculateNorm());
+        System.out.println(findVerticesOnPlate(baseFace));
+        System.out.println(IsMassCenterInsideBaseFace(baseFace));
+
+    }
+
+
+
+
     /**
      * write stl file
      * */
@@ -375,7 +422,7 @@ public class stlBuild {
         //the base point to construct vector
         VertexGeometric basePoint = baseFace.VertexList.get(0);
         //the base normal to compute dot product
-        stlFaceNorm baseNorm = baseFace.getFaceNorm();
+        stlFaceNorm baseNorm = baseFace.calculateNorm();
 
         //iterate through the list of vertices to check
         float x=0;
@@ -532,10 +579,61 @@ public class stlBuild {
      */
     public boolean IsInsidePolygon(VertexGeometric v,ArrayList<VertexGeometric> vlist){
 
+        int i;
+        int j;
+        boolean result = false;
 
+        //loop through vlist
+        for(i=0,j=vlist.size()-1;i<vlist.size();j=i++){
+            if ((vlist.get(i).z > v.z) != (vlist.get(j).z > v.z) &&
+                    (v.x < (vlist.get(j).x - vlist.get(i).x) * (v.z - vlist.get(i).z) / (vlist.get(j).z-vlist.get(i).z) + vlist.get(i).x)) {
+                result = !result;
+            }
+        }
 
-        return false;
+        return result;
     }
+    public boolean testIsInsidePolygon(){
+
+        ArrayList<VertexGeometric> vlist = new ArrayList<VertexGeometric>();
+        VertexGeometric v = new VertexGeometric(4,0,4,1);
+
+        vlist.add(new VertexGeometric(0,0,0,2));
+        vlist.add(new VertexGeometric(0,0,3,2));
+        vlist.add(new VertexGeometric(3,0,3,2));
+        vlist.add(new VertexGeometric(3,0,0,2));
+
+        return IsInsidePolygon(v,vlist);
+
+    }
+
+
+    /**
+     * check if mass center is inside the hull polygon of base surface
+     * @param baseface
+     * @return
+     */
+    public boolean IsMassCenterInsideBaseFace(stlFace baseface){
+
+        //initiate the center of mass
+        VertexGeometric massCenter = new VertexGeometric(-1,-1,-1,-1);
+        massCenter = calculateMassCenterByPyramid();
+
+        //base surface hull
+        ArrayList<VertexGeometric> vlist = new ArrayList<VertexGeometric>();
+        quickHull hullFunction = new quickHull();
+        //call find vertices on the same plate to get the list of vertices
+        vlist = hullFunction.getHullPolygon(findVerticesOnPlate(baseface));
+//        System.err.println("-------------list of vertices in hull polygon-------------");
+//        System.err.println(baseface.VertexList);
+//        System.err.println(findVerticesOnPlate(baseface));
+//        System.err.println(vlist);
+
+        return IsInsidePolygon(massCenter,vlist);
+
+    }
+
+
 
 
 }

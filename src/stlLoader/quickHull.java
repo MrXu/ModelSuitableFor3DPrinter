@@ -18,7 +18,7 @@ import ObjLoader.builder.VertexGeometric;
 public class quickHull {
 
 
-    public ArrayList<VertexGeometric> quickHull(ArrayList<VertexGeometric> points){
+    public ArrayList<VertexGeometric> getHullPolygon(ArrayList<VertexGeometric> points){
 
         //the arraylist of points in convex-hull
         ArrayList<VertexGeometric> convexHull = new ArrayList<VertexGeometric>();
@@ -116,16 +116,18 @@ public class quickHull {
             return;
         }
 
-        float dist = Float.MIN_VALUE;
+        float dist = -Float.MAX_VALUE;
         int furthestPoint = -1;
 
         //find the furthest point
         for (int i=0;i<set.size();i++){
             VertexGeometric p = set.get(i);
             float distance = distance(A,B,p);
+            System.err.println(distance);
             if (distance > dist){
                 dist = distance;
                 furthestPoint = i;
+                System.err.println(furthestPoint);
             }
         }
 

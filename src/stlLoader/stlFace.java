@@ -28,16 +28,11 @@ public class stlFace {
         this.normal = calculateNorm();
     }
 
+    //face norm changes constantly when model is rotated or shifted
     public stlFaceNorm getFaceNorm(){
-        //if normal does not exist, calculate the normal
-        if (normal==null){
             stlFaceNorm faceNorm = calculateNorm();
             normal = faceNorm;
             return normal;
-        }
-        else{
-            return normal;
-        }
     }
 
     public stlFaceNorm calculateNorm(){
