@@ -524,4 +524,18 @@ public class stlBuild {
     }
 
 
+    /**
+     * if vertice is inside the polygon by x,z
+     * @param v
+     * @param vlist
+     * @return
+     */
+    public boolean IsInsidePolygon(VertexGeometric v,ArrayList<VertexGeometric> vlist){
+
+
+
+        return false;
+    }
+
+
 }
