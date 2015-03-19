@@ -123,11 +123,11 @@ public class quickHull {
         for (int i=0;i<set.size();i++){
             VertexGeometric p = set.get(i);
             float distance = distance(A,B,p);
-            System.err.println(distance);
+//            System.err.println(distance);
             if (distance > dist){
                 dist = distance;
                 furthestPoint = i;
-                System.err.println(furthestPoint);
+//                System.err.println(furthestPoint);
             }
         }
 

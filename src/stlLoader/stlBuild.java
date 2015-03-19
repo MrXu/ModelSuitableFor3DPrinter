@@ -4,6 +4,7 @@ import ObjLoader.builder.VertexGeometric;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +21,7 @@ public class stlBuild {
     public ArrayList<VertexGeometric> innerVertexList = new ArrayList<VertexGeometric>();
     public float thickness = 0.01f;
     public float minThicknessUnit = 0.005f;
+    public float cosToleranceLevel = 0.0001f;
 
     public void addOuterStlFace(stlFace face){
         this.outerStlFaces.add(face);
@@ -35,6 +37,18 @@ public class stlBuild {
     }
 
 
+    /*
+     * setters
+     */
+    public void setThickness(float thick){
+        this.thickness = thick;
+    }
+    public void setMinThicknessUnit(float thickunit){
+        this.minThicknessUnit = thickunit;
+    }
+
+
+
 
     public void process(stlFace baseFace){
         /**
@@ -47,13 +61,20 @@ public class stlBuild {
          * STEP 2:
          * construct inner structure
          */
+        long constructInnerStartTime = System.nanoTime();
         constructInnerStructure();
+        long constructInnerEndTime = System.nanoTime();
 
         /**
          * STEP 4:
          * rotate the model based on the selected basesurface
          */
-        rotateModelSurface(baseFace);
+        //test
+        long autochoosebasestartTime = System.nanoTime();
+        stlFace autoBase = chooseBaseFace();
+        long autochoosefaceendTime = System.nanoTime();
+        rotateModelSurface(autoBase);
+//        rotateModelSurface(baseFace);
 
         /**
          * STEP 5:
@@ -67,11 +88,31 @@ public class stlBuild {
          * 1) if yes, do nothing
          * 2) if no, modify the distance of inner vertices shifting
          */
-        if (!IsMassCenterInsideBaseFace(baseFace)){
-            adjustThicknessContinuously(baseFace);
+        long thicknessadjuststartTime = System.nanoTime();
+        if (!IsMassCenterInsideBaseFace(autoBase)){
+            adjustThicknessContinuously(autoBase);
             System.out.println("Finish adjusting thickness.");
         }
+        long thicknessadjustendTime = System.nanoTime();
 
+
+
+
+        //for experimental purpose
+        System.out.println("=========> time of constructing inner structure: " + (constructInnerEndTime-constructInnerStartTime));
+        System.out.println("=========> time of finding base surface:         " + (autochoosefaceendTime-autochoosebasestartTime));
+        System.out.println("=========> time of thickness adjustment:         " + (thicknessadjustendTime-thicknessadjuststartTime));
+        System.out.println("=========> Volume before hollowing:              " + this.getTotalVolumeOfObject("before"));
+        System.out.println("=========> Volume after hollowing:               " + this.getTotalVolumeOfObject("after"));
+        long getMassCenterStartTime = System.nanoTime();
+        System.out.println("=========> Mass Center Coordinates:              " + this.calculateMassCenterByPyramid());
+        long getMassCenterEndTime = System.nanoTime();
+        System.out.println("=========> time of calculating mass center:      " + (getMassCenterEndTime-getMassCenterStartTime));
+        //get list hull polygon
+        quickHull hullFunction = new quickHull();
+        ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(findVerticesOnPlate(autoBase));
+        System.out.println("=========> Convex hull of base surface:          "+vlist);
+        System.out.println("=========> time used for experiments:            "+(System.nanoTime()-thicknessadjustendTime));
 
     }
 
@@ -182,8 +223,8 @@ public class stlBuild {
                 constructInnerStructureForTest();
             }
 
-            System.err.println("Number of outer vertices (writer): "+outerVertexList.size());
-            System.err.println(innerStlFaces);
+//            System.err.println("Number of outer vertices (writer): "+outerVertexList.size());
+//            System.err.println(innerStlFaces);
             for(loopi=0;loopi< innerStlFaces.size();loopi++){
                 //write face normal
                 writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
@@ -374,7 +415,7 @@ public class stlBuild {
         stlFaces.addAll(this.outerStlFaces);
 
         //initiate the center of mass
-        VertexGeometric massCenter = new VertexGeometric(-1,-1,-1,-1);
+        VertexGeometric massCenter = new VertexGeometric(0,0,0,-1);
         //initiate the total volume
         float totalVolume = 0;
         //initiate the current volume
@@ -390,17 +431,23 @@ public class stlBuild {
                 VertexGeometric p2 = face.VertexList.get(1);
                 VertexGeometric p3 = face.VertexList.get(2);
                 //calculate current volume based on Tetrahedron
-                currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y+p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+                //currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y+p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6; ==> wrong equation
+                currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y*p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
                 //accumulate total volume
                 totalVolume += currentVolume;
                 //accumulate mass center coordinates
                 massCenter.x += ((p1.x+p2.x+p3.x)/4)*currentVolume;
                 massCenter.y += ((p1.y+p2.y+p3.y)/4)*currentVolume;
                 massCenter.z += ((p1.z+p2.z+p3.z)/4)*currentVolume;
+//                System.out.println("------current 4 points-------- (0,0,0) "+p1.toString()+p2.toString()+p3.toString());
+//                System.out.println("------current volume---------- "+currentVolume);
+//                System.out.println("------current mass center----- "+massCenter.toString());
             }
             massCenter.x = massCenter.x/totalVolume;
             massCenter.y = massCenter.y/totalVolume;
             massCenter.z = massCenter.z/totalVolume;
+//            System.out.println("-------total volume calculated------ "+totalVolume);
+//            System.out.println("-------mass center calculated------- "+massCenter.toString());
             return massCenter;
         }
 
@@ -421,6 +468,8 @@ public class stlBuild {
         //the base normal to compute dot product
         stlFaceNorm baseNorm = baseFace.calculateNorm();
 
+//        System.out.println("(test)----base face normal-----> "+baseNorm.toString());
+
         //iterate through the list of vertices to check
         float x=0;
         float y=0;
@@ -434,11 +483,20 @@ public class stlBuild {
 
             //check if cross dot product is zero
             dotproduct = x*baseNorm.x+y*baseNorm.y+z*baseNorm.z;
-            if (dotproduct == 0){
+            float vectorLengthA = (float) Math.sqrt((double)(x*x+y*y+z*z));
+            float vectorLengthB = (float) Math.sqrt((double)(baseNorm.x*baseNorm.x+baseNorm.y*baseNorm.y+baseNorm.z*baseNorm.z));
+            float cosValue = dotproduct/(vectorLengthA*vectorLengthB);
+
+            if (cosValue>=-this.cosToleranceLevel && cosValue<= this.cosToleranceLevel){
                 verticesList.add(vertex);
+                //testing
+//                System.out.println("(test)----dot product-----> ("+x+","+y+","+z+",)dot("+baseNorm+")=0");
             }
 
         }
+
+        //test
+//        System.out.println("(test)----list of vertices on plane--->"+verticesList);
 
         return verticesList;
 
@@ -465,11 +523,11 @@ public class stlBuild {
         sinAroundZ = modelRotation.sinAroundZ;
 
         //testing
-        System.out.println(baseNorm);
-        System.out.println(cosAroundX);
-        System.out.println(sinAroundX);
-        System.out.println(cosAroundZ);
-        System.out.println(sinAroundZ);
+//        System.out.println(baseNorm);
+//        System.out.println(cosAroundX);
+//        System.out.println(sinAroundX);
+//        System.out.println(cosAroundZ);
+//        System.out.println(sinAroundZ);
 
 
         if (baseNorm.x==0 & baseNorm.z==0){
@@ -544,7 +602,7 @@ public class stlBuild {
         }
 
         //print
-        System.out.println(shiftingVector);
+//        System.out.println(shiftingVector);
 
         //shift all vertices
         for (VertexGeometric outvertex:this.outerVertexList){
@@ -553,7 +611,7 @@ public class stlBuild {
             outvertex.z = outvertex.z - shiftingVector.z;
 
             //testing
-            System.out.println(outvertex);
+//            System.out.println(outvertex);
 
         }
         for (VertexGeometric invertex:this.innerVertexList){
@@ -562,7 +620,7 @@ public class stlBuild {
             invertex.z = invertex.z - shiftingVector.z;
 
             //testing
-            System.out.println(invertex);
+//            System.out.println(invertex);
         }
 
     }
@@ -614,7 +672,10 @@ public class stlBuild {
 
         //initiate the center of mass
         VertexGeometric massCenter = new VertexGeometric(-1,-1,-1,-1);
+        long getMassCenterStartTime = System.nanoTime();
         massCenter = calculateMassCenterByPyramid();
+        long getMassCenterEndTime = System.nanoTime();
+//        System.out.println("=========> time of calculating mass center: " + (getMassCenterEndTime-getMassCenterStartTime));
 
         //base surface hull
         ArrayList<VertexGeometric> vlist = new ArrayList<VertexGeometric>();
@@ -741,10 +802,12 @@ public class stlBuild {
         //get list hull polygon
         quickHull hullFunction = new quickHull();
         ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(findVerticesOnPlate(baseface));
-        System.out.println(vlist);
+        System.out.println("(adjust thickness)----vertices on the same plane----> "+findVerticesOnPlate(baseface));
+        System.out.println("(adjust thickness)====convex hull of base===========> "+vlist);
+        System.out.println("(adjust thickness)====current mass center===========> "+massCenter);
 
         //initialize shifting vector with random value
-        stlVector shiftingVector = new stlVector(vlist.get(0),vlist.get(1));
+        stlVector shiftingVector = new stlVector(0,0,0);
         float minimumDistance = Float.MAX_VALUE;
         stlVector tempVector;
 
@@ -767,7 +830,8 @@ public class stlBuild {
             shiftingVector = tempVector;
         }
 
-        System.out.println("The shifting vector: "+shiftingVector.toString());
+        //testing
+//        System.out.println("The shifting vector: "+shiftingVector.toString());
 
         /**
          * based on which side the vertices are,
@@ -807,7 +871,7 @@ public class stlBuild {
         //get list hull polygon
         quickHull hullFunction = new quickHull();
         ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(vexlist);
-        System.out.println(vlist);
+//        System.out.println(vlist);
 
         //initialize shifting vector with random value
         stlVector shiftingVector = new stlVector(vlist.get(0),vlist.get(1));
@@ -830,10 +894,203 @@ public class stlBuild {
             shiftingVector = tempVector;
         }
 
-        System.out.println(shiftingVector.toString());
+//        System.out.println(shiftingVector.toString());
 
 
     }
+
+
+
+
+    public stlFace chooseBaseFace(){
+
+        //initialize hash map
+        HashMap<String,ArrayList<stlFace>> SamePlaneHashTable = new HashMap<String, ArrayList<stlFace>>();
+
+
+        //construct hash map
+        for (stlFace face:this.outerStlFaces){
+            stlFaceNorm normalVector = face.getFaceNorm();
+            float a = normalVector.x;
+            float b = normalVector.y;
+            float c = normalVector.z;
+            VertexGeometric aVertex = face.VertexList.get(0);
+            float d = -(a*aVertex.x + b*aVertex.y + c*aVertex.z);
+
+            //tolerance level
+            int at = (int) (a/this.cosToleranceLevel);
+            int bt = (int) (b/this.cosToleranceLevel);
+            int ct = (int) (c/this.cosToleranceLevel);
+            int dt = (int) (d/this.cosToleranceLevel);
+
+            //hash function with tolerance level
+            String key = Integer.toString(100000000*at + 1000000*bt + 1000*ct + bt);
+
+            //the hash function without tolerance level
+            //String key = Float.toString(a * 100000000 + b * 1000000 + c * 1000 + d);
+
+            if (SamePlaneHashTable.containsKey(key)){
+                SamePlaneHashTable.get(key).add(face);
+            }
+            else{
+                ArrayList<stlFace> newArrList = new ArrayList<stlFace>();
+                newArrList.add(face);
+                SamePlaneHashTable.put(key,newArrList);
+            }
+
+        }
+
+
+        //find face with largest area
+        float maximum_area = -Float.MAX_VALUE;
+        stlFace theBaseFace = null;
+        //loop through hashtable
+        for (ArrayList<stlFace> lst: SamePlaneHashTable.values()){
+            float tempArea = 0.0f;
+
+            for (stlFace fc:lst){
+                tempArea = tempArea + fc.getFaceArea();
+            }
+
+            if (tempArea>maximum_area){
+                maximum_area = tempArea;
+                theBaseFace = lst.get(0);
+            }
+
+        }
+
+        System.out.println("********************** The Base Surface Selected *******************");
+        System.out.println(theBaseFace.toString());
+
+        return theBaseFace;
+
+    }
+
+
+
+
+
+    /*
+     * for experimental purpose
+     */
+
+    //for experimental purpose
+    public float getTotalVolumeOfObject(String selection){
+
+
+        //create a combined arraylist of stlfaces
+        ArrayList<stlFace> stlFaces = new ArrayList<stlFace>(this.outerStlFaces);
+        if (selection.equals("after")){
+            stlFaces.addAll(this.innerStlFaces);
+        }
+
+
+        float totalVolume = 0;
+        //initiate the current volume
+        float currentVolume = 0;
+
+
+        for(stlFace face:stlFaces){
+            VertexGeometric p1 = face.VertexList.get(0);
+            VertexGeometric p2 = face.VertexList.get(1);
+            VertexGeometric p3 = face.VertexList.get(2);
+            //calculate current volume based on Tetrahedron
+            //currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y+p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+            currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y*p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+            //testing
+//            System.out.println("====Volume of tetrahedron===>  "+currentVolume);
+
+            //accumulate total volume
+            totalVolume += currentVolume;
+            //accumulate mass center coordinates
+
+        }
+
+        return totalVolume;
+
+
+    }
+
+
+    public void writeHalfStl(String filename){
+
+        int loopi = 0;
+        int loopj = 0;
+
+        if (outerStlFaces.isEmpty()){
+            System.err.println("ArrayList of outerStlFace is null.");
+        }
+        else {
+            /**
+             * if innerstlfaces is empty, construct one
+             * */
+            if (innerStlFaces.isEmpty()){
+                System.err.println("ArrayList of innerStlFace is null.");
+                constructInnerStructure();
+            }
+
+            Writer writer = null;
+
+            try {
+                writer = new BufferedWriter(new OutputStreamWriter(
+                        new FileOutputStream(filename), "utf-8"));
+
+                //write stl head
+                writer.write("solid shape\n");
+
+                int halfSize = outerStlFaces.size()/2;
+
+                for(loopi=0;loopi< halfSize;loopi++){
+                    /**
+                     * write outer face
+                     * */
+                    //write face normal
+                    writer.write(" facet normal " + outerStlFaces.get(loopi).normal.toString() + "\n");
+                    //write vertices
+                    writer.write("  outer loop\n");
+                    for(loopj=0;loopj<3;loopj++){
+                        writer.write("   vertex " + outerStlFaces.get(loopi).VertexList.get(loopj).toString() + "\n");
+                    }
+                    writer.write("  endloop\n");
+                    //write endfacet
+                    writer.write(" endfacet\n");
+                    /**
+                     * write co-responding inner face
+                     * */
+                    //write face normal
+                    writer.write(" facet normal " + innerStlFaces.get(loopi).normal.toString() + "\n");
+                    //write vertices
+                    writer.write("  outer loop\n");
+                    for(loopj=0;loopj<3;loopj++){
+                        writer.write("   vertex " + innerStlFaces.get(loopi).VertexList.get(loopj).toString() + "\n");
+                    }
+                    writer.write("  endloop\n");
+                    //write endfacet
+                    writer.write(" endfacet\n");
+                }
+
+
+                //write stl endsolid
+                writer.write("endsolid");
+
+
+
+            } catch (IOException ex) {
+                // report
+            }
+            finally {
+                try {
+                    writer.close();
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+        }
+    }
+
+
 
 
 }

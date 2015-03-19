@@ -19,24 +19,42 @@ public class converter {
         String filename;
         String stlfilename;
         String innerStlFileName;
+        String halfStlFileName;
         int loopi=0;
 
         System.out.println("Welcome to the 3D converter!");
 
-        filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.obj";
+        String tempname = "Mario";
 
-        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/wheel.stl";
-        innerStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/wheel/innerwheel.stl";
+        filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+".obj";
+
+        //experiment
+        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+".stl";
+        innerStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+"_inner.stl";
+        halfStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+"_half.stl";
 
         System.err.println("LOADING FILE " + filename);
+
+        //timer to check execution time
+        long startTime = System.nanoTime();
+        System.err.println("Start time of converter: "+startTime);
+
         try {
             Build builder = new Build();
+
+            //check time
+            long parserstartTime = System.nanoTime();
             Parse obj = new Parse(builder, filename);
+            long parserendTime = System.nanoTime();
 
             //initialize stl builder
             stlBuild stlbuilder = new stlBuild();
             //copy vertexGeometrics list
             stlbuilder.copyOuterVertexList(builder.verticesG);
+
+            //set thickness
+            stlbuilder.setMinThicknessUnit(0.01f);
+            stlbuilder.setThickness(1.0f);
 
             // print object name
 //            System.out.println(builder.objectName);
@@ -70,10 +88,10 @@ public class converter {
                 builder.verticesG.get(loopi).z = builder.verticesG.get(loopi).z - shiftingVector.z;
 
                 //test index
-                System.out.println(builder.verticesG.get(loopi).index);
+//                System.out.println(builder.verticesG.get(loopi).index);
             }
             // print vertices normals
-            System.out.println("*****"+builder.verticesN.size()+" vertices normals *****");
+//            System.out.println("*****"+builder.verticesN.size()+" vertices normals *****");
 //            for(loopi=0;loopi<builder.verticesN.size();loopi++){
 //                System.out.println(builder.verticesN.get(loopi).toString());
 //            }
@@ -117,10 +135,18 @@ public class converter {
              * STEP 5:
              * write stl files
              */
+            long filewritingstartTime = System.nanoTime();
             //write stl file
             stlbuilder.writeStl(stlfilename);
+            long filewritingendTime = System.nanoTime();
+            long endTime = System.nanoTime();
+
             //write inner stl file
             stlbuilder.writeInnerStl(innerStlFileName);
+            //write half stl file
+            stlbuilder.writeHalfStl(halfStlFileName);
+
+
 
 
 
@@ -151,6 +177,10 @@ public class converter {
 
 
 
+            //for experimental purpose
+            System.out.println("=========> time of parsing OBJ file:             " + (parserendTime-parserstartTime));
+            System.out.println("=========> time of writing STL file:             " + (filewritingendTime-filewritingstartTime));
+            System.out.println("=========> time of whole converter action:       " + (endTime-startTime));
 
 
         } catch (java.io.FileNotFoundException e) {
