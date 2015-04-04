@@ -29,7 +29,7 @@ public class converter {
         filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+".obj";
 
         //experiment
-        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+".stl";
+        stlfilename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+"_temp.stl";
         innerStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+"_inner.stl";
         halfStlFileName = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+"_half.stl";
 
@@ -53,8 +53,8 @@ public class converter {
             stlbuilder.copyOuterVertexList(builder.verticesG);
 
             //set thickness
-            stlbuilder.setMinThicknessUnit(0.01f);
-            stlbuilder.setThickness(1.0f);
+            stlbuilder.setMinThicknessUnit(2.0f);
+            stlbuilder.setThickness(5.0f);
 
             // print object name
 //            System.out.println(builder.objectName);

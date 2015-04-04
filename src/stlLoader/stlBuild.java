@@ -21,7 +21,7 @@ public class stlBuild {
     public ArrayList<VertexGeometric> innerVertexList = new ArrayList<VertexGeometric>();
     public float thickness = 0.01f;
     public float minThicknessUnit = 0.005f;
-    public float cosToleranceLevel = 0.0001f;
+    public float cosToleranceLevel = 0.001f;
 
     public void addOuterStlFace(stlFace face){
         this.outerStlFaces.add(face);
@@ -802,8 +802,8 @@ public class stlBuild {
         //get list hull polygon
         quickHull hullFunction = new quickHull();
         ArrayList<VertexGeometric> vlist = hullFunction.getHullPolygon(findVerticesOnPlate(baseface));
-        System.out.println("(adjust thickness)----vertices on the same plane----> "+findVerticesOnPlate(baseface));
-        System.out.println("(adjust thickness)====convex hull of base===========> "+vlist);
+//        System.out.println("(adjust thickness)----vertices on the same plane----> "+findVerticesOnPlate(baseface));
+//        System.out.println("(adjust thickness)====convex hull of base===========> "+vlist);
         System.out.println("(adjust thickness)====current mass center===========> "+massCenter);
 
         //initialize shifting vector with random value
@@ -980,8 +980,11 @@ public class stlBuild {
 
         //create a combined arraylist of stlfaces
         ArrayList<stlFace> stlFaces = new ArrayList<stlFace>(this.outerStlFaces);
+//        System.err.println("(test)---- faces list size of outer faces-->" + stlFaces.size());
         if (selection.equals("after")){
             stlFaces.addAll(this.innerStlFaces);
+//            System.err.println("(test)---- faces list size of inner faces-->" + stlFaces.size());
+//            System.err.println(this.innerStlFaces);
         }
 
 
@@ -989,7 +992,7 @@ public class stlBuild {
         //initiate the current volume
         float currentVolume = 0;
 
-
+        //original algorithm
         for(stlFace face:stlFaces){
             VertexGeometric p1 = face.VertexList.get(0);
             VertexGeometric p2 = face.VertexList.get(1);
@@ -1005,6 +1008,26 @@ public class stlBuild {
             //accumulate mass center coordinates
 
         }
+
+
+        //for testing purpose
+//        for(stlFace face:this.innerStlFaces){
+//            VertexGeometric p1 = face.VertexList.get(0);
+//            VertexGeometric p2 = face.VertexList.get(1);
+//            VertexGeometric p3 = face.VertexList.get(2);
+//            //calculate current volume based on Tetrahedron
+//            //currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y+p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+//            currentVolume = (p1.x*p2.y*p3.z-p1.x*p3.y*p2.z-p2.x*p1.y*p3.z+p2.x*p3.y*p1.z+p3.x*p1.y*p2.z-p3.x*p2.y*p1.z)/6;
+//            //testing
+////            System.out.println("====Volume of tetrahedron===>  "+currentVolume);
+//
+//            //accumulate total volume
+//            totalVolume += currentVolume;
+//            //accumulate mass center coordinates
+//
+//        }
+
+
 
         return totalVolume;
 
@@ -1040,7 +1063,7 @@ public class stlBuild {
 
                 int halfSize = outerStlFaces.size()/2;
 
-                for(loopi=0;loopi< halfSize;loopi++){
+                for(loopi=0;loopi< outerStlFaces.size();loopi++){
                     /**
                      * write outer face
                      * */
