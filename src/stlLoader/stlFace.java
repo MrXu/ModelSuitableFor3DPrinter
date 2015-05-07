@@ -84,6 +84,14 @@ public class stlFace {
     }
 
 
+    public stlFace backOfTheFace(){
+        ArrayList<VertexGeometric> reversedArray = new ArrayList<VertexGeometric>();
+        for (int i=this.VertexList.size()-1;i>=0;i--){
+            reversedArray.add(this.VertexList.get(i));
+        }
+        return new stlFace(reversedArray);
+    }
+
 
     public String toString(){
         return VertexList.get(0).toString()+"|"+VertexList.get(1).toString()+"|"+VertexList.get(2).toString();

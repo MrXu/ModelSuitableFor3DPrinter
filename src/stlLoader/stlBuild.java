@@ -73,7 +73,8 @@ public class stlBuild {
         long autochoosebasestartTime = System.nanoTime();
         stlFace autoBase = chooseBaseFace();
         long autochoosefaceendTime = System.nanoTime();
-        rotateModelSurface(autoBase);
+//        rotateModelSurface(autoBase);
+        rotateModelSurface(autoBase.backOfTheFace());
 //        rotateModelSurface(baseFace);
 
         /**
@@ -97,8 +98,9 @@ public class stlBuild {
 
 
 
-
         //for experimental purpose
+        System.out.println("=========> reversed base surface:                "+autoBase.backOfTheFace().toString());
+        System.out.println("=========> base surface:                         "+autoBase.toString());
         System.out.println("=========> time of constructing inner structure: " + (constructInnerEndTime-constructInnerStartTime));
         System.out.println("=========> time of finding base surface:         " + (autochoosefaceendTime-autochoosebasestartTime));
         System.out.println("=========> time of thickness adjustment:         " + (thicknessadjustendTime-thicknessadjuststartTime));
@@ -530,10 +532,10 @@ public class stlBuild {
 //        System.out.println(sinAroundZ);
 
 
-        if (baseNorm.x==0 & baseNorm.z==0){
-            return;
-        }
-        else{
+//        if (baseNorm.x==0 & baseNorm.z==0){
+//            return;
+//        }
+//        else{
             tempX = tempY = tempZ = 0;
 
             //rotate outerVertexList
@@ -577,7 +579,7 @@ public class stlBuild {
                 vertex.z = tempZ;
             }
 
-        }
+//        }
 
     }
 

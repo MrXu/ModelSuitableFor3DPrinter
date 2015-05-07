@@ -24,7 +24,7 @@ public class converter {
 
         System.out.println("Welcome to the 3D converter!");
 
-        String tempname = "Mario";
+        String tempname = "wheel";
 
         filename = "/Users/xuwei/JavaProjects/modelconverter/objfiles/experiment/"+tempname+".obj";
 
@@ -53,8 +53,8 @@ public class converter {
             stlbuilder.copyOuterVertexList(builder.verticesG);
 
             //set thickness
-            stlbuilder.setMinThicknessUnit(2.0f);
-            stlbuilder.setThickness(5.0f);
+            stlbuilder.setMinThicknessUnit(0.01f);
+            stlbuilder.setThickness(0.02f);
 
             // print object name
 //            System.out.println(builder.objectName);
